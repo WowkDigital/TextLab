@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TextLab — Text Analyzer</title>
+  
+  <!-- External Resources -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Local Assets -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo-container">
+      <div class="logo-icon">
+        <i data-lucide="file-text" style="width:20px;height:20px;color:#000;"></i>
+      </div>
+      <div>
+        <h1 class="logo-text">TextLab</h1>
+        <p class="logo-sub">Advanced text analyzer and manipulator</p>
+      </div>
+    </div>
+    <button class="btn btn-ghost" onclick="toggleTheme()" id="themeBtn" title="Toggle Theme">
+      <i data-lucide="sun" style="width:14px;height:14px;"></i>
+    </button>
+  </div>
+
+  <div class="main-grid">
+
+    <!-- LEFT: editor + controls -->
+    <div class="editor-column">
+
+      <!-- Textarea -->
+      <div class="card" style="padding:16px;">
+        <div class="editor-card-header">
+          <span class="section-header" style="margin:0;">Input Text</span>
+          <div class="editor-toolbar">
+            <button class="btn btn-ghost" onclick="pasteText()" title="Paste">
+              <i data-lucide="clipboard" style="width:13px;height:13px;"></i> Paste
+            </button>
+            <button class="btn btn-danger" onclick="clearText()" title="Clear">
+              <i data-lucide="trash-2" style="width:13px;height:13px;"></i>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Editor Wrapper with Gutter and Area -->
+        <div class="editor-wrapper">
+          <div id="gutter" class="editor-gutter">1</div>
+          <div class="editor-area">
+            <div class="editor-backdrop">
+              <div id="highlights" class="editor-highlights"></div>
+            </div>
+            <textarea id="mainText" rows="12" placeholder="Write or paste your text here..." oninput="onTextChange()" spellcheck="false"></textarea>
+          </div>
+        </div>
+
+        <!-- Limit bar -->
+        <div class="limit-controls">
+          <div class="limit-input-row">
+            <label style="font-size:12px; color:var(--text2); white-space:nowrap;">Character limit:</label>
+            <input type="number" id="limitInput" min="0" placeholder="e.g. 280" style="width:100px; border-radius:6px; padding:4px 8px; font-size:12px;" oninput="onTextChange()">
+            <span id="limitInfo" style="font-size:12px; color:var(--text2);"></span>
+          </div>
+          <div class="limit-bar-container" id="limitBarWrap" style="display:none;">
+            <div class="limit-bar" id="limitBar"></div>
+          </div>
+          <div id="limitWarning" style="font-size:11px; color:var(--danger); margin-top:4px; display:none;">
+            <i data-lucide="alert-circle" style="width:11px;height:11px;display:inline;"></i> Limit exceeded!
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="card" style="padding:16px;">
+        <div class="tab-bar" id="tabBar">
+          <div class="tab active" onclick="switchTab('segments')">Segmentation</div>
+          <div class="tab" onclick="switchTab('unique-words')">Unique Words</div>
+          <div class="tab" onclick="switchTab('unique-lines')">Unique Lines</div>
+          <div class="tab" onclick="switchTab('frequency')">Frequency</div>
+          <div class="tab" onclick="switchTab('transform')">Transformations</div>
+        </div>
+
+        <!-- TAB: Segments -->
+        <div id="tab-segments" class="tab-panel fade-in">
+          <div class="tab-controls">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <label style="font-size:12px; color:var(--text2);">Segment length:</label>
+              <input type="number" id="segLen" value="500" min="10" style="width:80px; border-radius:6px; padding:4px 8px; font-size:12px;">
+              <span style="font-size:12px; color:var(--text3);">chars</span>
+            </div>
+            <label style="display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text2); cursor:pointer;">
+              <span class="toggle"><input type="checkbox" id="keepSentences" checked><span class="slider"></span></span>
+              Keep sentences
+            </label>
+            <button class="btn btn-primary" onclick="segmentText()">
+              <i data-lucide="scissors" style="width:13px;height:13px;"></i> Split
+            </button>
+          </div>
+          <div id="segmentsOutput"></div>
+        </div>
+
+        <!-- TAB: Unique words -->
+        <div id="tab-unique-words" class="tab-panel fade-in" style="display:none;">
+          <div class="tab-controls">
+            <label style="display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text2); cursor:pointer;">
+              <span class="toggle"><input type="checkbox" id="caseInsensitive" checked><span class="slider"></span></span>
+              Case insensitive
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text2); cursor:pointer;">
+              <span class="toggle"><input type="checkbox" id="stripPunct" checked><span class="slider"></span></span>
+              Strip punctuation
+            </label>
+            <button class="btn btn-primary" onclick="getUniqueWords()">
+              <i data-lucide="star" style="width:13px;height:13px;"></i> Show
+            </button>
+          </div>
+          <div id="uniqueWordsOutput"></div>
+        </div>
+
+        <!-- TAB: Unique lines -->
+        <div id="tab-unique-lines" class="tab-panel fade-in" style="display:none;">
+          <div class="tab-controls">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <label style="font-size:12px; color:var(--text2);">Separator:</label>
+              <select id="lineSep" style="border-radius:6px; padding:4px 24px 4px 8px; font-size:12px;">
+                <option value="newline">New Line (\n)</option>
+                <option value="semicolon">Semicolon (;)</option>
+                <option value="comma">Comma (,)</option>
+                <option value="all">All</option>
+              </select>
+            </div>
+            <label style="display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text2); cursor:pointer;">
+              <span class="toggle"><input type="checkbox" id="trimLines" checked><span class="slider"></span></span>
+              Trim whitespace
+            </label>
+            <button class="btn btn-primary" onclick="getUniqueLines()">
+              <i data-lucide="list" style="width:13px;height:13px;"></i> Show
+            </button>
+          </div>
+          <div id="uniqueLinesOutput"></div>
+        </div>
+
+        <!-- TAB: Frequency -->
+        <div id="tab-frequency" class="tab-panel fade-in" style="display:none;">
+          <div class="tab-controls">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <label style="font-size:12px; color:var(--text2);">Top:</label>
+              <input type="number" id="freqTop" value="20" min="1" max="200" style="width:60px; border-radius:6px; padding:4px 8px; font-size:12px;">
+            </div>
+            <label style="display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text2); cursor:pointer;">
+              <span class="toggle"><input type="checkbox" id="freqIgnoreCase" checked><span class="slider"></span></span>
+              Case insensitive
+            </label>
+            <label style="display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text2); cursor:pointer;">
+              <span class="toggle"><input type="checkbox" id="freqStopwords" checked><span class="slider"></span></span>
+              Filter stopwords
+            </label>
+            <button class="btn btn-primary" onclick="getFrequency()">
+              <i data-lucide="bar-chart-2" style="width:13px;height:13px;"></i> Analyze
+            </button>
+          </div>
+          <div id="frequencyOutput"></div>
+        </div>
+
+        <!-- TAB: Transform -->
+        <div id="tab-transform" class="tab-panel fade-in" style="display:none;">
+          <div class="transform-grid">
+            <button class="btn btn-ghost" onclick="transform('upper')" style="justify-content:center;">
+              <i data-lucide="arrow-up" style="width:13px;height:13px;"></i> UPPERCASE
+            </button>
+            <button class="btn btn-ghost" onclick="transform('lower')" style="justify-content:center;">
+              <i data-lucide="arrow-down" style="width:13px;height:13px;"></i> lowercase
+            </button>
+            <button class="btn btn-ghost" onclick="transform('title')" style="justify-content:center;">
+              <i data-lucide="type" style="width:13px;height:13px;"></i> Title Case
+            </button>
+            <button class="btn btn-ghost" onclick="transform('sentence')" style="justify-content:center;">
+              <i data-lucide="align-left" style="width:13px;height:13px;"></i> Sentence case
+            </button>
+            <button class="btn btn-ghost" onclick="transform('reverse')" style="justify-content:center;">
+              <i data-lucide="rewind" style="width:13px;height:13px;"></i> Reverse
+            </button>
+            <button class="btn btn-ghost" onclick="transform('reversewords')" style="justify-content:center;">
+              <i data-lucide="shuffle" style="width:13px;height:13px;"></i> Reverse words
+            </button>
+            <button class="btn btn-ghost" onclick="transform('removeExtraSpaces')" style="justify-content:center;">
+              <i data-lucide="minimize-2" style="width:13px;height:13px;"></i> Remove extra spaces
+            </button>
+            <button class="btn btn-ghost" onclick="transform('removeDuplicateLines')" style="justify-content:center;">
+              <i data-lucide="copy" style="width:13px;height:13px;"></i> Remove duplicate lines
+            </button>
+            <button class="btn btn-ghost" onclick="transform('removeEmptyLines')" style="justify-content:center;">
+              <i data-lucide="minus" style="width:13px;height:13px;"></i> Remove empty lines
+            </button>
+            <button class="btn btn-ghost" onclick="transform('sortLines')" style="justify-content:center;">
+              <i data-lucide="sort-asc" style="width:13px;height:13px;"></i> Sort lines A-Z
+            </button>
+            <button class="btn btn-ghost" onclick="transform('slugify')" style="justify-content:center;">
+              <i data-lucide="link" style="width:13px;height:13px;"></i> Slugify (URL)
+            </button>
+            <button class="btn btn-ghost" onclick="transform('extractEmails')" style="justify-content:center;">
+              <i data-lucide="at-sign" style="width:13px;height:13px;"></i> Extract emails
+            </button>
+            <button class="btn btn-ghost" onclick="transform('extractUrls')" style="justify-content:center;">
+              <i data-lucide="globe" style="width:13px;height:13px;"></i> Extract URLs
+            </button>
+            <button class="btn btn-ghost" onclick="transform('extractNumbers')" style="justify-content:center;">
+              <i data-lucide="hash" style="width:13px;height:13px;"></i> Extract numbers
+            </button>
+          </div>
+          <div id="transformOutput"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT: stats -->
+    <div class="stats-column">
+      <div class="card" style="padding:16px; position:sticky; top:16px;">
+        <span class="section-header">Statistics</span>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div style="font-size:10px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.06em;">Characters</div>
+            <div id="s-chars" class="stat-value" style="color:var(--accent);">0</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size:10px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.06em;">Chars (no sp.)</div>
+            <div id="s-chars-ns" class="stat-value" style="color:var(--accent);">0</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size:10px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.06em;">Words</div>
+            <div id="s-words" class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size:10px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.06em;">Sentences</div>
+            <div id="s-sentences" class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size:10px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.06em;">Paragraphs</div>
+            <div id="s-paragraphs" class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size:10px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.06em;">Lines</div>
+            <div id="s-lines" class="stat-value">0</div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <div class="stat-item">
+            <span style="color:var(--text2);">Unique words</span>
+            <span id="s-unique" class="mono" style="font-weight:600;">0</span>
+          </div>
+          <div class="stat-item">
+            <span style="color:var(--text2);">Avg word length</span>
+            <span id="s-avgword" class="mono" style="font-weight:600;">0</span>
+          </div>
+          <div class="stat-item">
+            <span style="color:var(--text2);">Avg sentence length</span>
+            <span id="s-avgsen" class="mono" style="font-weight:600;">0</span>
+          </div>
+          <div class="stat-item">
+            <span style="color:var(--text2);">Readability (Flesch)</span>
+            <span id="s-flesch" class="mono" style="font-weight:600;">–</span>
+          </div>
+          <div class="stat-item">
+            <span style="color:var(--text2);">Reading time</span>
+            <span id="s-readtime" class="mono" style="font-weight:600;">0 s</span>
+          </div>
+          <div class="stat-item">
+            <span style="color:var(--text2);">Speaking time</span>
+            <span id="s-speaktime" class="mono" style="font-weight:600;">0 s</span>
+          </div>
+          <div class="stat-item">
+            <span style="color:var(--text2);">Uppercase letters</span>
+            <span id="s-upper" class="mono" style="font-weight:600;">0</span>
+          </div>
+          <div class="stat-item">
+            <span style="color:var(--text2);">Digits</span>
+            <span id="s-digits" class="mono" style="font-weight:600;">0</span>
+          </div>
+          <div class="stat-item">
+            <span style="color:var(--text2);">Bytes (UTF-8)</span>
+            <span id="s-bytes" class="mono" style="font-weight:600;">0 B</span>
+          </div>
+        </div>
+
+        <div class="stats-actions">
+          <button class="btn btn-ghost" onclick="copyAll()" style="flex:1; justify-content:center;">
+            <i data-lucide="copy" style="width:13px;height:13px;"></i> Copy
+          </button>
+          <button class="btn btn-ghost" onclick="downloadTxt()" style="flex:1; justify-content:center;">
+            <i data-lucide="download" style="width:13px;height:13px;"></i> Download
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Wowk Digital Footer -->
+<script src="https://cdn.jsdelivr.net/gh/WowkDigital/WowkDigitalFooter@latest/wowk-digital-footer.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    WowkDigitalFooter.init({
+      siteName: 'TextLab',
+      container: 'body',
+      brandName: 'Wowk Digital',
+      brandUrl: 'https://github.com/WowkDigital'
+    });
+  });
+</script>
+
+<!-- Main Script -->
+<script type="module" src="js/main.js"></script>
+
+</body>
+</html>
