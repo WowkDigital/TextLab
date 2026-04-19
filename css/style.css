@@ -77,12 +77,16 @@ textarea, .editor-highlights, .editor-gutter {
   padding-right: 12px;
   user-select: none;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .editor-gutter div {
-  height: 22.1px; /* 13px * 1.7 line-height = 22.1px to match textarea lines exactly */
+  height: 1.7em; /* Use relative units matched to line-height */
   padding: 0;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .editor-area {
@@ -111,6 +115,7 @@ textarea, .editor-highlights, .editor-gutter {
   font-size: 13px;
   line-height: 1.7;
   margin: 0;
+  padding: 0;
 }
 
 .editor-highlights mark {
@@ -158,16 +163,17 @@ textarea {
   border: none !important;
   color: var(--text);
   font-family: 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace !important;
-  font-size: 13px;
-  line-height: 1.7;
+  font-size: 13px !important;
+  line-height: 1.7 !important;
   resize: vertical;
   outline: none;
-  padding: 12px;
+  padding: 12px !important;
   margin: 0;
   box-shadow: none !important;
   overflow-y: scroll; 
   white-space: pre-wrap;
   word-wrap: break-word;
+  box-sizing: border-box;
 }
 
 textarea::placeholder {
@@ -265,6 +271,9 @@ select {
 }
 
 .tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 6px 14px;
   border-radius: 6px;
   font-size: 13px;

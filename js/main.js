@@ -17,6 +17,14 @@ function init() {
   window.switchTab = (tab) => {
     state.currentTab = tab;
     setActiveTab(tab);
+    
+    // Auto-execute operations when tab is clicked
+    if (state.text) {
+      if (tab === 'segments') window.segmentText();
+      else if (tab === 'unique-words') window.getUniqueWords();
+      else if (tab === 'unique-lines') window.getUniqueLines();
+      else if (tab === 'frequency') window.getFrequency();
+    }
   };
   
   window.toggleTheme = toggleTheme;
