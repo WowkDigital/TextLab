@@ -79,6 +79,27 @@
         </div>
       </div>
 
+      <!-- Overflow Editor (Hidden by default) -->
+      <div id="overflowSection" class="card fade-in" style="padding:16px; display:none; border-color:var(--danger); background:rgba(255, 77, 106, 0.02);">
+        <div class="editor-card-header">
+           <div style="display:flex; align-items:center; gap:8px;">
+             <span class="section-header" style="margin:0; color:var(--danger);">Excess Characters</span>
+             <span id="overflowCount" style="font-size:11px; color:var(--text3); font-family:monospace;"></span>
+           </div>
+           <div class="editor-toolbar">
+            <button class="btn btn-ghost" onclick="copyOverflow()" title="Copy Overflow">
+              <i data-lucide="copy" style="width:13px;height:13px;"></i>
+            </button>
+          </div>
+        </div>
+        <div class="editor-wrapper" style="border-color:rgba(255, 77, 106, 0.3);">
+          <div id="overflowGutter" class="editor-gutter">1</div>
+          <div class="editor-area">
+            <textarea id="overflowText" rows="6" placeholder="Excess characters will appear here..." oninput="onOverflowChange()" spellcheck="false" style="color:var(--danger);"></textarea>
+          </div>
+        </div>
+      </div>
+
       <!-- Tabs -->
       <div class="card" style="padding:16px;">
         <div class="tab-bar" id="tabBar">

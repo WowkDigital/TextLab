@@ -76,15 +76,10 @@ export function syncHighlighter(text, limit) {
   }
 
   // When limit is exceeded:
-  // 1. Make textarea text transparent (except for caret)
-  // 2. Make highlights visible
-  textarea.style.color = 'transparent';
-  textarea.style.caretColor = 'var(--text)';
-  highlightsEl.style.color = 'var(--text)';
-  
-  const normalText = text.slice(0, limit);
-  const excessText = text.slice(limit);
-  
-  // Create the split view
-  highlightsEl.innerHTML = escHtml(normalText) + '<div class="limit-marker">###</div>' + escHtml(excessText);
+  // We don't need to show excess in the backdrop anymore as it's in the overflow box
+  // but we can still highlight the boundary if we want.
+  // For now, let's keep it simple and just show the text up to limit.
+  textarea.style.color = 'var(--text)';
+  highlightsEl.innerHTML = escHtml(text);
+  highlightsEl.style.color = 'transparent';
 }

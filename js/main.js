@@ -30,15 +30,84 @@ function init() {
   window.toggleTheme = toggleTheme;
   
   window.onTextChange = () => {
-    const textarea = document.getElementById('mainText');
-    state.text = textarea.value;
+    refreshTextFlow('main');
+  };
+
+  window.onOverflowChange = () => {
+    refreshTextFlow('overflow');
+  };
+
+  /**
+   * Refreshes the text distribution between main and overflow textareas.
+   * @param {'main'|'overflow'|'limit'} source The source of the change
+   */
+  function refreshTextFlow(source) {
+    const mainTextarea = document.getElementById('mainText');
+    const overflowTextarea = document.getElementById('overflowText');
+    const limit = parseInt(document.getElementById('limitInput').value);
+    const overflowSection = document.getElementById('overflowSection');
+
+    if (limit && limit > 0) {
+      // 1. Push from main to overflow
+      if (mainTextarea.value.length > limit) {
+        const excess = mainTextarea.value.slice(limit);
+        const normal = mainTextarea.value.slice(0, limit);
+        const hadFocus = document.activeElement === mainTextarea;
+        
+        mainTextarea.value = normal;
+        overflowTextarea.value = excess + overflowTextarea.value;
+        
+        if (hadFocus) {
+          overflowTextarea.focus();
+          overflowTextarea.setSelectionRange(excess.length, excess.length);
+        }
+      } 
+      // 2. Pull from overflow to main
+      else if (mainTextarea.value.length < limit && overflowTextarea.value.length > 0) {
+        const space = limit - mainTextarea.value.length;
+        const pull = overflowTextarea.value.slice(0, space);
+        const remaining = overflowTextarea.value.slice(space);
+        
+        const hadFocus = document.activeElement === overflowTextarea;
+        const selStart = overflowTextarea.selectionStart;
+
+        mainTextarea.value += pull;
+        overflowTextarea.value = remaining;
+        
+        if (hadFocus) {
+          if (selStart < space) {
+            mainTextarea.focus();
+            const newPos = mainTextarea.value.length - (pull.length - selStart);
+            mainTextarea.setSelectionRange(newPos, newPos);
+          } else {
+            overflowTextarea.focus();
+            const newPos = selStart - space;
+            overflowTextarea.setSelectionRange(newPos, newPos);
+          }
+        }
+      }
+    } else {
+      // No limit: move everything to main
+      if (overflowTextarea.value.length > 0) {
+        mainTextarea.value += overflowTextarea.value;
+        overflowTextarea.value = '';
+      }
+    }
+
+    state.text = mainTextarea.value + overflowTextarea.value;
     
+    const isOverflowing = overflowTextarea.value.length > 0;
+    overflowSection.style.display = (isOverflowing || (limit && (mainTextarea.value.length + overflowTextarea.value.length) > limit)) ? 'block' : 'none';
+
     updateStats();
     updateLimitBar();
     updateLineNumbers();
-    
-    const limit = parseInt(document.getElementById('limitInput').value);
-    syncHighlighter(state.text, limit);
+    syncHighlighter(mainTextarea.value, limit);
+  }
+
+  window.copyOverflow = () => {
+    const overflowTextarea = document.getElementById('overflowText');
+    window.copyText(overflowTextarea.value);
   };
 
   /**
@@ -46,16 +115,27 @@ function init() {
    */
   function updateLineNumbers() {
     const gutter = document.getElementById('gutter');
+    const overflowGutter = document.getElementById('overflowGutter');
     if (!gutter) return;
     
-    const lines = state.text.split('\n');
-    const lineCount = lines.length;
+    const mainLines = document.getElementById('mainText').value.split('\n');
+    const overflowLines = document.getElementById('overflowText').value.split('\n');
+    const mainLineCount = mainLines.length;
+    const overflowLineCount = overflowLines.length;
     
-    let html = '';
-    for (let i = 1; i <= lineCount; i++) {
-      html += `<div>${i}</div>`;
+    let mainHtml = '';
+    for (let i = 1; i <= mainLineCount; i++) {
+        mainHtml += `<div>${i}</div>`;
     }
-    gutter.innerHTML = html;
+    gutter.innerHTML = mainHtml;
+
+    if (overflowGutter) {
+      let overflowHtml = '';
+      for (let i = 1; i <= overflowLineCount; i++) {
+          overflowHtml += `<div>${mainLineCount + i}</div>`;
+      }
+      overflowGutter.innerHTML = overflowHtml;
+    }
   }
   
   window.pasteText = async () => {
@@ -70,6 +150,8 @@ function init() {
   
   window.clearText = () => {
     document.getElementById('mainText').value = '';
+    document.getElementById('overflowText').value = '';
+    document.getElementById('overflowSection').style.display = 'none';
     window.onTextChange();
     ['segmentsOutput', 'uniqueWordsOutput', 'uniqueLinesOutput', 'frequencyOutput', 'transformOutput'].forEach(id => {
       const el = document.getElementById(id);
@@ -268,6 +350,14 @@ function init() {
     }
   });
 
+  const overflowTextarea = document.getElementById('overflowText');
+  const overflowGutter = document.getElementById('overflowGutter');
+  if (overflowTextarea && overflowGutter) {
+    overflowTextarea.addEventListener('scroll', () => {
+      overflowGutter.scrollTop = overflowTextarea.scrollTop;
+    });
+  }
+
   window.addEventListener('resize', handleResize);
   handleResize();
   updateLineNumbers();
@@ -321,6 +411,7 @@ function updateLimitBar() {
   const len = state.text.length;
   const pct = Math.min((len / limit) * 100, 100);
   const over = len > limit;
+  const overflowSection = document.getElementById('overflowSection');
 
   wrap.style.display = 'block';
   bar.style.width = pct + '%';
@@ -328,6 +419,13 @@ function updateLimitBar() {
   info.textContent = `${len.toLocaleString('en')} / ${limit.toLocaleString('en')} ch.`;
   info.style.color = over ? 'var(--danger)' : pct > 80 ? 'var(--warning)' : 'var(--text2)';
   warn.style.display = over ? 'block' : 'none';
+
+  if (over) {
+    overflowSection.style.display = 'block';
+    document.getElementById('overflowCount').textContent = `(+${(len - limit).toLocaleString('en')} extra)`;
+  } else if (document.getElementById('overflowText').value.length === 0) {
+    overflowSection.style.display = 'none';
+  }
 
   if (window.lucide) window.lucide.createIcons();
 }
