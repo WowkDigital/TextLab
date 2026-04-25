@@ -8,6 +8,8 @@ TextLab is a powerful, client-side web application designed for comprehensive te
 
 ![TextLab Preview](https://via.placeholder.com/1200x600?text=TextLab+Editor+Preview)
 
+[**🚀 Launch Online Version**](https://wowkdigital.github.io/TextLab/)
+
 ## ✨ Features
 
 ### 📊 Comprehensive Statistics
