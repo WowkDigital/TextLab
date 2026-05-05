@@ -7,7 +7,7 @@
   
   <!-- External Resources -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <!-- Local Assets -->
@@ -17,26 +17,6 @@
 
 <div class="container">
 
-  <!-- Header -->
-  <div class="header">
-    <div class="logo-container">
-      <div class="logo-icon">
-        <i data-lucide="file-text" style="width:20px;height:20px;color:#000;"></i>
-      </div>
-      <div>
-        <h1 class="logo-text">TextLab</h1>
-        <p class="logo-sub">Advanced text analyzer and manipulator</p>
-      </div>
-    </div>
-    <div style="display:flex; gap:8px;">
-      <a href="https://github.com/WowkDigital/TextLab" target="_blank" class="btn btn-ghost" title="View Source on GitHub">
-        <i data-lucide="github" style="width:14px;height:14px;"></i>
-      </a>
-      <button class="btn btn-ghost" onclick="toggleTheme()" id="themeBtn" title="Toggle Theme">
-        <i data-lucide="sun" style="width:14px;height:14px;"></i>
-      </button>
-    </div>
-  </div>
 
   <div class="main-grid">
 
@@ -45,9 +25,20 @@
 
       <!-- Textarea -->
       <div class="card" style="padding:16px;">
-        <div class="editor-card-header">
-          <span class="section-header" style="margin:0;">Input Text</span>
-          <div class="editor-toolbar">
+        <div class="editor-card-header" style="align-items: flex-start;">
+          <div class="logo-container">
+            <div class="logo-icon" style="padding: 6px;">
+              <i data-lucide="file-text" style="width:16px;height:16px;color:#000;"></i>
+            </div>
+            <div>
+              <h1 class="logo-text" style="font-size: 18px;">TextLab</h1>
+              <p class="logo-sub" style="font-size: 10px;">Advanced text analyzer and manipulator</p>
+            </div>
+          </div>
+          <div class="editor-toolbar" style="margin-top: 4px;">
+            <button class="btn btn-ghost" onclick="insertLorem()" title="Lorem Ipsum">
+              <i data-lucide="text-quote" style="width:13px;height:13px;"></i> Lorem
+            </button>
             <button class="btn btn-ghost" onclick="pasteText()" title="Paste">
               <i data-lucide="clipboard" style="width:13px;height:13px;"></i> Paste
             </button>
@@ -59,7 +50,6 @@
         
         <!-- Editor Wrapper with Gutter and Area -->
         <div class="editor-wrapper">
-          <div id="gutter" class="editor-gutter">1</div>
           <div class="editor-area">
             <div class="editor-backdrop">
               <div id="highlights" class="editor-highlights"></div>
@@ -98,7 +88,6 @@
           </div>
         </div>
         <div class="editor-wrapper" style="border-color:rgba(255, 77, 106, 0.3);">
-          <div id="overflowGutter" class="editor-gutter">1</div>
           <div class="editor-area">
             <textarea id="overflowText" rows="6" placeholder="Excess characters will appear here..." oninput="onOverflowChange()" spellcheck="false" style="color:var(--danger);"></textarea>
           </div>

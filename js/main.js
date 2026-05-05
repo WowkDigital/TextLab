@@ -101,7 +101,7 @@ function init() {
 
     updateStats();
     updateLimitBar();
-    updateLineNumbers();
+
     syncHighlighter(mainTextarea.value, limit);
   }
 
@@ -110,34 +110,13 @@ function init() {
     window.copyText(overflowTextarea.value);
   };
 
-  /**
-   * Updates the line numbers in the gutter.
-   */
-  function updateLineNumbers() {
-    const gutter = document.getElementById('gutter');
-    const overflowGutter = document.getElementById('overflowGutter');
-    if (!gutter) return;
-    
-    const mainLines = document.getElementById('mainText').value.split('\n');
-    const overflowLines = document.getElementById('overflowText').value.split('\n');
-    const mainLineCount = mainLines.length;
-    const overflowLineCount = overflowLines.length;
-    
-    let mainHtml = '';
-    for (let i = 1; i <= mainLineCount; i++) {
-        mainHtml += `<div>${i}</div>`;
-    }
-    gutter.innerHTML = mainHtml;
-
-    if (overflowGutter) {
-      let overflowHtml = '';
-      for (let i = 1; i <= overflowLineCount; i++) {
-          overflowHtml += `<div>${mainLineCount + i}</div>`;
-      }
-      overflowGutter.innerHTML = overflowHtml;
-    }
-  }
   
+  window.insertLorem = () => {
+    const lorem = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+    document.getElementById('mainText').value = lorem;
+    window.onTextChange();
+  };
+
   window.pasteText = async () => {
     try {
       const t = await navigator.clipboard.readText();
@@ -338,29 +317,17 @@ function init() {
   // Sync scroll between textarea, highlights, and gutter
   const textarea = document.getElementById('mainText');
   const backdrop = document.querySelector('.editor-backdrop');
-  const gutter = document.getElementById('gutter');
-  
   textarea.addEventListener('scroll', () => {
     if (backdrop) {
       backdrop.scrollTop = textarea.scrollTop;
       backdrop.scrollLeft = textarea.scrollLeft;
     }
-    if (gutter) {
-      gutter.scrollTop = textarea.scrollTop;
-    }
   });
 
-  const overflowTextarea = document.getElementById('overflowText');
-  const overflowGutter = document.getElementById('overflowGutter');
-  if (overflowTextarea && overflowGutter) {
-    overflowTextarea.addEventListener('scroll', () => {
-      overflowGutter.scrollTop = overflowTextarea.scrollTop;
-    });
-  }
 
   window.addEventListener('resize', handleResize);
   handleResize();
-  updateLineNumbers();
+
 }
 
 /**
