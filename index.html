@@ -50,6 +50,7 @@
         
         <!-- Editor Wrapper with Gutter and Area -->
         <div class="editor-wrapper">
+          <div id="gutter" class="editor-gutter">1</div>
           <div class="editor-area">
             <div class="editor-backdrop">
               <div id="highlights" class="editor-highlights"></div>
@@ -88,7 +89,11 @@
           </div>
         </div>
         <div class="editor-wrapper" style="border-color:rgba(255, 77, 106, 0.3);">
+          <div id="overflowGutter" class="editor-gutter">1</div>
           <div class="editor-area">
+            <div class="editor-backdrop">
+              <div id="overflowHighlights" class="editor-highlights"></div>
+            </div>
             <textarea id="overflowText" rows="6" placeholder="Excess characters will appear here..." oninput="onOverflowChange()" spellcheck="false" style="color:var(--danger);"></textarea>
           </div>
         </div>

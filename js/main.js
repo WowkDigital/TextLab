@@ -1,7 +1,7 @@
 import { escHtml, showToast, formatTime, formatBytes, STOPWORDS } from './modules/utils.js';
 import { calculateStats } from './modules/stats.js';
 import { transforms, segmentText } from './modules/transforms.js';
-import { setActiveTab, resetStatsDisplay, toggleTheme, updateEl, syncHighlighter } from './modules/ui.js';
+import { setActiveTab, resetStatsDisplay, toggleTheme, updateEl, updateLineNumbers } from './modules/ui.js';
 
 // Global state
 const state = {
@@ -102,7 +102,9 @@ function init() {
     updateStats();
     updateLimitBar();
 
-    syncHighlighter(mainTextarea.value, limit);
+    updateLineNumbers('mainText', 'highlights', 'gutter', 0);
+    const mainLinesCount = mainTextarea.value.split('\n').length;
+    updateLineNumbers('overflowText', 'overflowHighlights', 'overflowGutter', mainLinesCount);
   }
 
   window.copyOverflow = () => {
@@ -316,18 +318,40 @@ function init() {
 
   // Sync scroll between textarea, highlights, and gutter
   const textarea = document.getElementById('mainText');
-  const backdrop = document.querySelector('.editor-backdrop');
+  const backdrop = textarea.parentElement.querySelector('.editor-backdrop');
+  const gutter = document.getElementById('gutter');
+  
   textarea.addEventListener('scroll', () => {
     if (backdrop) {
       backdrop.scrollTop = textarea.scrollTop;
       backdrop.scrollLeft = textarea.scrollLeft;
     }
+    if (gutter) {
+      gutter.scrollTop = textarea.scrollTop;
+    }
   });
 
+  const overflowTextarea = document.getElementById('overflowText');
+  const overflowBackdrop = overflowTextarea ? overflowTextarea.parentElement.querySelector('.editor-backdrop') : null;
+  const overflowGutter = document.getElementById('overflowGutter');
+  
+  if (overflowTextarea) {
+    overflowTextarea.addEventListener('scroll', () => {
+      if (overflowBackdrop) {
+        overflowBackdrop.scrollTop = overflowTextarea.scrollTop;
+        overflowBackdrop.scrollLeft = overflowTextarea.scrollLeft;
+      }
+      if (overflowGutter) {
+        overflowGutter.scrollTop = overflowTextarea.scrollTop;
+      }
+    });
+  }
 
   window.addEventListener('resize', handleResize);
   handleResize();
 
+  // Initial line number setup
+  refreshTextFlow('main');
 }
 
 /**

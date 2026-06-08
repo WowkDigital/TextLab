@@ -58,28 +58,43 @@ export function toggleTheme() {
 }
 
 /**
- * Syncs the highlighter backdrop with textarea content and highlights overflow.
- * @param {string} text 
- * @param {number} limit 
+ * Syncs the highlights backdrop and updates the line numbers in the gutter, taking line wraps into account.
+ * @param {string} textareaId 
+ * @param {string} highlightsId 
+ * @param {string} gutterId 
+ * @param {number} startLineOffset 
  */
-export function syncHighlighter(text, limit) {
-  const highlightsEl = document.getElementById('highlights');
-  const textarea = document.getElementById('mainText');
-  if (!highlightsEl || !textarea) return;
+export function updateLineNumbers(textareaId, highlightsId, gutterId, startLineOffset = 0) {
+  const textarea = document.getElementById(textareaId);
+  const highlightsEl = document.getElementById(highlightsId);
+  const gutter = document.getElementById(gutterId);
+  if (!textarea || !highlightsEl || !gutter) return;
 
-  // If no limit, reset to normal view
-  if (!limit || limit <= 0 || text.length <= limit) {
-    highlightsEl.innerHTML = escHtml(text.endsWith('\n') ? text + ' ' : text);
-    textarea.style.color = 'var(--text)'; // Normal text color
-    highlightsEl.style.color = 'transparent'; // Hide backdrop text
-    return;
-  }
-
-  // When limit is exceeded:
-  // We don't need to show excess in the backdrop anymore as it's in the overflow box
-  // but we can still highlight the boundary if we want.
-  // For now, let's keep it simple and just show the text up to limit.
   textarea.style.color = 'var(--text)';
-  highlightsEl.innerHTML = escHtml(text);
   highlightsEl.style.color = 'transparent';
+
+  const text = textarea.value;
+  const lines = text.split('\n');
+  const linesHtml = lines.map(line => {
+    // Empty lines need a zero-width space (&#8203;) to occupy vertical height in the layout
+    const content = line === '' ? '&#8203;' : escHtml(line);
+    return `<div class="highlight-line">${content}</div>`;
+  }).join('');
+  highlightsEl.innerHTML = linesHtml;
+
+  // Measure visual heights of highlight lines to perfectly align gutter line numbers
+  requestAnimationFrame(() => {
+    const highlightLines = highlightsEl.querySelectorAll('.highlight-line');
+    let gutterHtml = '';
+    highlightLines.forEach((lineEl, index) => {
+      const height = lineEl.getBoundingClientRect().height;
+      const lineNumber = startLineOffset + index + 1;
+      gutterHtml += `<div style="height: ${height}px;">${lineNumber}</div>`;
+    });
+    gutter.innerHTML = gutterHtml;
+
+    // Keep scrolling in sync
+    gutter.scrollTop = textarea.scrollTop;
+  });
 }
+
