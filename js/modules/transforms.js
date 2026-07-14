@@ -4,8 +4,8 @@
 export const transforms = {
   upper: (t) => t.toUpperCase(),
   lower: (t) => t.toLowerCase(),
-  title: (t) => t.replace(/\b\w/g, c => c.toUpperCase()),
-  sentence: (t) => t.toLowerCase().replace(/(^|[.!?]\s+)([a-z])/g, (m, p1, p2) => p1 + p2.toUpperCase()),
+  title: (t) => t.replace(/(?<=^|[^\p{L}])\p{L}/gu, c => c.toUpperCase()),
+  sentence: (t) => t.toLowerCase().replace(/(^|[.!?]\s+)(\p{L})/gu, (m, p1, p2) => p1 + p2.toUpperCase()),
   reverse: (t) => t.split('').reverse().join(''),
   reversewords: (t) => t.split(/\s+/).reverse().join(' '),
   removeExtraSpaces: (t) => t.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim(),
@@ -14,8 +14,8 @@ export const transforms = {
     return [...new Set(lines)].join('\n');
   },
   removeEmptyLines: (t) => t.split('\n').filter(l => l.trim()).join('\n'),
-  sortLines: (t) => t.split('\n').sort((a, b) => a.localeCompare(b, 'en')).join('\n'),
-  slugify: (t) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-'),
+  sortLines: (t) => t.split('\n').sort((a, b) => a.localeCompare(b)).join('\n'),
+  slugify: (t) => t.toLowerCase().replace(/ł/g, 'l').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-'),
   extractEmails: (t) => (t.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || []).join('\n') || '(none)',
   extractUrls: (t) => (t.match(/https?:\/\/[^\s]+/g) || []).join('\n') || '(none)',
   extractNumbers: (t) => (t.match(/-?\d+([.,]\d+)?/g) || []).join('\n') || '(none)'

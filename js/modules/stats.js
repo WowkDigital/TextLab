@@ -16,7 +16,7 @@ export function calculateStats(t) {
   const sentences = t.split(/[.!?]+/).filter(s => s.trim().length > 2);
   const paragraphs = t.split(/\n\s*\n/).filter(p => p.trim());
   
-  const cleanWords = words.map(w => w.toLowerCase().replace(/[^\w]/g, '')).filter(w => w);
+  const cleanWords = words.map(w => w.toLowerCase().replace(/[^\p{L}\p{N}]/gu, '')).filter(w => w);
   const uniqueWords = new Set(cleanWords);
   
   const avgWordLen = wordCount ? (cleanWords.reduce((a, w) => a + w.length, 0) / wordCount).toFixed(1) : 0;
@@ -27,7 +27,7 @@ export function calculateStats(t) {
   
   const readTimeSec = Math.round(wordCount / 3.5);
   const speakTimeSec = Math.round(wordCount / 2.5);
-  const upper = (t.match(/[A-Z]/g) || []).length;
+  const upper = (t.match(/\p{Lu}/gu) || []).length;
   const digits = (t.match(/\d/g) || []).length;
   const bytes = new Blob([t]).size;
 

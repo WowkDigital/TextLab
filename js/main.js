@@ -196,10 +196,10 @@ function init() {
     if (!state.text.trim()) { out.innerHTML = '<p style="color:var(--text3);font-size:13px;">No text provided.</p>'; return; }
 
     let words = state.text.trim().split(/\s+/).filter(w => w.length > 0);
-    if (sp) words = words.map(w => w.replace(/[^\w]/g, ''));
+    if (sp) words = words.map(w => w.replace(/[^\p{L}\p{N}]/gu, ''));
     if (ci) words = words.map(w => w.toLowerCase());
     words = words.filter(w => w.length > 0);
-    const unique = [...new Set(words)].sort();
+    const unique = [...new Set(words)].sort((a, b) => a.localeCompare(b));
 
     const result = unique.join('\n');
     let html = `<div style="font-size:12px; color:var(--text3); margin-bottom:10px;">
@@ -240,12 +240,14 @@ function init() {
   window.getFrequency = () => {
     const top = parseInt(document.getElementById('freqTop').value) || 20;
     const sw = document.getElementById('freqStopwords').checked;
+    const ignoreCase = document.getElementById('freqIgnoreCase').checked;
     const out = document.getElementById('frequencyOutput');
     if (!state.text.trim()) { out.innerHTML = '<p style="color:var(--text3);font-size:13px;">No text provided.</p>'; return; }
 
-    let words = state.text.toLowerCase().split(/\s+/);
-    words = words.map(w => w.replace(/[^\w]/g, '')).filter(w => w.length > 1);
-    if (sw) words = words.filter(w => !STOPWORDS.has(w));
+    let words = state.text.split(/\s+/);
+    if (ignoreCase) words = words.map(w => w.toLowerCase());
+    words = words.map(w => w.replace(/[^\p{L}\p{N}]/gu, '')).filter(w => w.length > 1);
+    if (sw) words = words.filter(w => !STOPWORDS.has(w.toLowerCase()));
 
     const freq = {};
     for (const w of words) freq[w] = (freq[w] || 0) + 1;

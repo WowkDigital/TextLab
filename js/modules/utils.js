@@ -57,16 +57,25 @@ export function formatBytes(b) {
  * @returns {number}
  */
 export function countSyllables(text) {
-  const words = text.toLowerCase().split(/\s+/);
+  const cleanText = text.toLowerCase();
+  const isPolish = /[ąęćłńóśźż]/.test(cleanText);
+  const words = cleanText.split(/\s+/).filter(w => w.length > 0);
+  
   let count = 0;
   for (const w of words) {
-    // Basic syllable counting for English
-    let word = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
-    word = word.replace(/^y/, '');
-    const m = word.match(/[aeiouy]{1,2}/g);
-    count += m ? m.length : 0;
+    if (isPolish) {
+      // Polish syllable counting: count contiguous vowel sequences
+      const m = w.match(/[aeiouyąęó]+/g);
+      count += m ? m.length : 0;
+    } else {
+      // Basic syllable counting for English
+      let word = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+      word = word.replace(/^y/, '');
+      const m = word.match(/[aeiouy]{1,2}/g);
+      count += m ? m.length : 0;
+    }
   }
   return count || 1;
 }
 
-export const STOPWORDS = new Set(['a', 'about', 'above', 'after', 'again', 'against', 'all', 'am', 'an', 'and', 'any', 'are', 'as', 'at', 'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by', 'could', 'did', 'do', 'does', 'doing', 'down', 'during', 'each', 'few', 'for', 'from', 'further', 'had', 'has', 'have', 'having', 'he', 'her', 'here', 'hers', 'herself', 'him', 'himself', 'his', 'how', 'i', 'if', 'in', 'into', 'is', 'it', 'its', 'itself', 'just', 'me', 'more', 'most', 'my', 'myself', 'no', 'nor', 'not', 'now', 'of', 'off', 'on', 'once', 'only', 'or', 'other', 'ought', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 'same', 'she', 'should', 'so', 'some', 'such', 'than', 'that', 'the', 'their', 'theirs', 'them', 'themselves', 'then', 'there', 'these', 'they', 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 'very', 'was', 'we', 'were', 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'with', 'would', 'you', 'your', 'yours', 'yourself', 'yourselves']);
+export const STOPWORDS = new Set(['a', 'about', 'above', 'after', 'again', 'against', 'all', 'am', 'an', 'and', 'any', 'are', 'as', 'at', 'be', 'because', 'been', 'before', 'being', 'below', 'between', 'both', 'but', 'by', 'could', 'did', 'do', 'does', 'doing', 'down', 'during', 'each', 'few', 'for', 'from', 'further', 'had', 'has', 'have', 'having', 'he', 'her', 'here', 'hers', 'herself', 'him', 'himself', 'his', 'how', 'i', 'if', 'in', 'into', 'is', 'it', 'its', 'itself', 'just', 'me', 'more', 'most', 'my', 'myself', 'no', 'nor', 'not', 'now', 'of', 'off', 'on', 'once', 'only', 'or', 'other', 'ought', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 'same', 'she', 'should', 'so', 'some', 'such', 'than', 'that', 'the', 'their', 'theirs', 'them', 'themselves', 'then', 'there', 'these', 'they', 'this', 'those', 'through', 'to', 'too', 'under', 'until', 'up', 'very', 'was', 'we', 'were', 'what', 'when', 'where', 'which', 'while', 'who', 'whom', 'why', 'with', 'would', 'you', 'your', 'yours', 'yourself', 'yourselves', 'i', 'w', 'na', 'z', 'do', 'o', 'się', 'że', 'lub', 'czy', 'dla', 'by', 'co', 'jest', 'są', 'był', 'była', 'było', 'były', 'ten', 'ta', 'to', 'te', 'tych', 'oraz', 'ale', 'we', 'jako', 'pod', 'nad', 'u', 'przez', 'po', 'przy', 'od', 'przed', 'za', 'jak']);
