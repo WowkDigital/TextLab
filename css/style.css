@@ -646,3 +646,71 @@ input:checked+.slider:before {
     grid-template-columns: 1fr;
   }
 }
+
+/* Find & Replace Panel */
+.find-replace-panel {
+  display: none;
+}
+
+.find-replace-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.find-replace-row .input-group {
+  position: relative;
+  flex: 1;
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+}
+
+.find-replace-row input[type="text"] {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.find-replace-row input[type="text"]:focus {
+  border-color: var(--accent);
+}
+
+.match-count {
+  position: absolute;
+  right: 12px;
+  font-size: 10px;
+  color: var(--text3);
+  font-family: 'JetBrains Mono', monospace;
+  pointer-events: none;
+}
+
+.find-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.find-actions .btn-active {
+  background: var(--accent) !important;
+  color: #000 !important;
+  border-color: var(--accent) !important;
+}
+
+.search-match {
+  background-color: rgba(255, 179, 71, 0.35) !important;
+  border-bottom: 2px solid var(--warning);
+  color: transparent !important;
+  border-radius: 2px;
+  box-shadow: 0 0 4px rgba(255, 179, 71, 0.2);
+}
+

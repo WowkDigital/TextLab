@@ -75,9 +75,34 @@ export function updateLineNumbers(textareaId, highlightsId, gutterId, startLineO
 
   const text = textarea.value;
   const lines = text.split('\n');
+
+  // Search highlighting setup
+  const findInput = document.getElementById('findInput');
+  const findVal = findInput ? findInput.value : '';
+  const isSearchActive = findVal && (textareaId === 'mainText' || textareaId === 'overflowText');
+  let regexObj = null;
+
+  if (isSearchActive) {
+    const isCaseSensitive = document.getElementById('btnCaseSensitive')?.classList.contains('btn-active');
+    const isRegex = document.getElementById('btnRegex')?.classList.contains('btn-active');
+    try {
+      const escapedFindVal = escHtml(findVal);
+      if (isRegex) {
+        regexObj = new RegExp(escapedFindVal, isCaseSensitive ? 'g' : 'gi');
+      } else {
+        const escapedLiteral = escapedFindVal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        regexObj = new RegExp(escapedLiteral, isCaseSensitive ? 'g' : 'gi');
+      }
+    } catch (e) {
+      // Ignore invalid regex
+    }
+  }
+
   const linesHtml = lines.map(line => {
-    // Empty lines need a zero-width space (&#8203;) to occupy vertical height in the layout
-    const content = line === '' ? '&#8203;' : escHtml(line);
+    let content = line === '' ? '&#8203;' : escHtml(line);
+    if (isSearchActive && regexObj && line !== '') {
+      content = content.replace(regexObj, match => match ? `<mark class="search-match">${match}</mark>` : match);
+    }
     return `<div class="highlight-line">${content}</div>`;
   }).join('');
   highlightsEl.innerHTML = linesHtml;

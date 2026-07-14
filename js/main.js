@@ -318,6 +318,169 @@ function init() {
     if (window.lucide) window.lucide.createIcons();
   };
 
+  // Find & Replace Functions
+  let isFindOpen = false;
+
+  window.toggleFindReplace = () => {
+    const panel = document.getElementById('findReplacePanel');
+    const toggleBtn = document.getElementById('findReplaceToggle');
+    const findInput = document.getElementById('findInput');
+    
+    isFindOpen = !isFindOpen;
+    panel.style.display = isFindOpen ? 'block' : 'none';
+    
+    if (isFindOpen) {
+      toggleBtn.classList.add('btn-active');
+      findInput.focus();
+      window.onSearchChange();
+    } else {
+      toggleBtn.classList.remove('btn-active');
+      // Clear highlights on close
+      updateLineNumbers('mainText', 'highlights', 'gutter', 0);
+      const mainLinesCount = document.getElementById('mainText').value.split('\n').length;
+      updateLineNumbers('overflowText', 'overflowHighlights', 'overflowGutter', mainLinesCount);
+    }
+  };
+
+  window.closeFindReplace = () => {
+    if (isFindOpen) window.toggleFindReplace();
+  };
+
+  window.toggleCaseSensitive = () => {
+    const btn = document.getElementById('btnCaseSensitive');
+    btn.classList.toggle('btn-active');
+    window.onSearchChange();
+  };
+
+  window.toggleRegex = () => {
+    const btn = document.getElementById('btnRegex');
+    btn.classList.toggle('btn-active');
+    window.onSearchChange();
+  };
+
+  window.onSearchChange = () => {
+    const findVal = document.getElementById('findInput').value;
+    const countEl = document.getElementById('matchCount');
+    
+    // Update active highlights
+    updateLineNumbers('mainText', 'highlights', 'gutter', 0);
+    const mainLinesCount = document.getElementById('mainText').value.split('\n').length;
+    updateLineNumbers('overflowText', 'overflowHighlights', 'overflowGutter', mainLinesCount);
+
+    if (!findVal) {
+      countEl.textContent = '0 matches';
+      return;
+    }
+
+    try {
+      const isCaseSensitive = document.getElementById('btnCaseSensitive').classList.contains('btn-active');
+      const isRegex = document.getElementById('btnRegex').classList.contains('btn-active');
+      
+      let regex;
+      if (isRegex) {
+        regex = new RegExp(findVal, isCaseSensitive ? 'g' : 'gi');
+      } else {
+        const escapedLiteral = findVal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        regex = new RegExp(escapedLiteral, isCaseSensitive ? 'g' : 'gi');
+      }
+
+      const matches = state.text.match(regex);
+      const count = matches ? matches.length : 0;
+      countEl.textContent = `${count} match${count === 1 ? '' : 'es'}`;
+    } catch (e) {
+      countEl.textContent = 'Invalid pattern';
+    }
+  };
+
+  window.performReplace = () => {
+    const findVal = document.getElementById('findInput').value;
+    const replaceVal = document.getElementById('replaceInput').value;
+    if (!findVal) return;
+
+    const isCaseSensitive = document.getElementById('btnCaseSensitive').classList.contains('btn-active');
+    const isRegex = document.getElementById('btnRegex').classList.contains('btn-active');
+
+    try {
+      let regex;
+      if (isRegex) {
+        regex = new RegExp(findVal, isCaseSensitive ? '' : 'i'); // Single match replacement
+      } else {
+        const escapedLiteral = findVal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        regex = new RegExp(escapedLiteral, isCaseSensitive ? '' : 'i');
+      }
+
+      if (regex.test(state.text)) {
+        const newText = state.text.replace(regex, replaceVal);
+        
+        // Distribute back to textareas
+        const mainTextarea = document.getElementById('mainText');
+        const overflowTextarea = document.getElementById('overflowText');
+        const limit = parseInt(document.getElementById('limitInput').value) || 0;
+        
+        if (limit > 0) {
+          mainTextarea.value = newText.slice(0, limit);
+          overflowTextarea.value = newText.slice(limit);
+        } else {
+          mainTextarea.value = newText;
+          overflowTextarea.value = '';
+        }
+        
+        window.onTextChange();
+        window.onSearchChange();
+        showToast('Replaced!');
+      } else {
+        showToast('No match found');
+      }
+    } catch (e) {
+      showToast('Replace error');
+    }
+  };
+
+  window.performReplaceAll = () => {
+    const findVal = document.getElementById('findInput').value;
+    const replaceVal = document.getElementById('replaceInput').value;
+    if (!findVal) return;
+
+    const isCaseSensitive = document.getElementById('btnCaseSensitive').classList.contains('btn-active');
+    const isRegex = document.getElementById('btnRegex').classList.contains('btn-active');
+
+    try {
+      let regex;
+      if (isRegex) {
+        regex = new RegExp(findVal, isCaseSensitive ? 'g' : 'gi');
+      } else {
+        const escapedLiteral = findVal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        regex = new RegExp(escapedLiteral, isCaseSensitive ? 'g' : 'gi');
+      }
+
+      const matches = state.text.match(regex);
+      if (matches && matches.length > 0) {
+        const newText = state.text.replace(regex, replaceVal);
+        
+        // Distribute back to textareas
+        const mainTextarea = document.getElementById('mainText');
+        const overflowTextarea = document.getElementById('overflowText');
+        const limit = parseInt(document.getElementById('limitInput').value) || 0;
+        
+        if (limit > 0) {
+          mainTextarea.value = newText.slice(0, limit);
+          overflowTextarea.value = newText.slice(limit);
+        } else {
+          mainTextarea.value = newText;
+          overflowTextarea.value = '';
+        }
+        
+        window.onTextChange();
+        window.onSearchChange();
+        showToast(`Replaced all ${matches.length} occurrences!`);
+      } else {
+        showToast('No matches found');
+      }
+    } catch (e) {
+      showToast('Replace error');
+    }
+  };
+
   // Sync scroll between textarea, highlights, and gutter
   const textarea = document.getElementById('mainText');
   const backdrop = textarea.parentElement.querySelector('.editor-backdrop');

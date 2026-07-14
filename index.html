@@ -36,6 +36,9 @@
             </div>
           </div>
           <div class="editor-toolbar" style="margin-top: 4px;">
+            <button class="btn btn-ghost" onclick="toggleFindReplace()" title="Find and Replace" id="findReplaceToggle">
+              <i data-lucide="search" style="width:13px;height:13px;"></i> Find
+            </button>
             <button class="btn btn-ghost" onclick="insertLorem()" title="Lorem Ipsum">
               <i data-lucide="text-quote" style="width:13px;height:13px;"></i> Lorem
             </button>
@@ -48,6 +51,26 @@
           </div>
         </div>
         
+        <!-- Find and Replace Panel -->
+        <div id="findReplacePanel" class="find-replace-panel card fade-in" style="display:none; margin-bottom:12px; padding:12px; background:var(--bg3);">
+          <div class="find-replace-row">
+            <div class="input-group">
+              <input type="text" id="findInput" placeholder="Find..." oninput="onSearchChange()">
+              <span id="matchCount" class="match-count">0 matches</span>
+            </div>
+            <div class="input-group">
+              <input type="text" id="replaceInput" placeholder="Replace with...">
+            </div>
+            <div class="find-actions">
+              <button class="btn btn-ghost btn-sm" onclick="toggleCaseSensitive()" id="btnCaseSensitive" title="Match Case (Aa)" style="padding:4px 8px; font-family:'JetBrains Mono',monospace; font-size:11px;">Aa</button>
+              <button class="btn btn-ghost btn-sm" onclick="toggleRegex()" id="btnRegex" title="Use Regular Expression (.*)" style="padding:4px 8px; font-family:'JetBrains Mono',monospace; font-size:11px;">.*</button>
+              <button class="btn btn-ghost btn-sm" onclick="performReplace()" title="Replace Next">Replace</button>
+              <button class="btn btn-ghost btn-sm" onclick="performReplaceAll()" title="Replace All">All</button>
+              <button class="btn btn-danger btn-sm" onclick="closeFindReplace()" title="Close Find" style="padding: 4px 6px;"><i data-lucide="x" style="width:13px;height:13px;"></i></button>
+            </div>
+          </div>
+        </div>
+
         <!-- Editor Wrapper with Gutter and Area -->
         <div class="editor-wrapper">
           <div id="gutter" class="editor-gutter">1</div>
